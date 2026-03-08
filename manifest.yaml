@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-app
+  labels:
+    app: inventory-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-app
+  template:
+    metadata:
+      labels:
+        app: inventory-app
+    spec:
+      containers:
+      - name: inventory-app
+        image: labebmatta/inventory-app:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: MYSQL_HOST
+          valueFrom:
+            secretKeyRef:
+              name: inventory-secrets
+              key: mysql-host
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: inventory-secrets
+              key: mysql-password
+        - name: MONGODB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: inventory-secrets
+              key: mongodb-host
+        - name: MONGODB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: inventory-secrets
+              key: mongodb-password
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 15
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+spec:
+  selector:
+    app: inventory-app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: inventory-secrets
+type: Opaque
+stringData:
+  mysql-host: "172.21.175.47"
+  mysql-password: "J5j5czGSfRfbCwwWORDc6xzE"
+  mongodb-host: "172.21.55.57"
+  mongodb-password: "fD4SobG8cAhQHkgWMD8FKGy9"
