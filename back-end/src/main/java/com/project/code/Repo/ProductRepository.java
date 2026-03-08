@@ -23,8 +23,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Product findById(long id);
 
-    @Query("SELECT i.product FROM Inventory i WHERE i.store.id = :storeId AND i.product.category = :category")
-    List<Product> findByNameLike(@Param("storeId") Long storeId, @Param("category") String pname);
+    @Query("SELECT i.product FROM Inventory i WHERE i.store.id = :storeId AND LOWER(i.product.name) LIKE LOWER(CONCAT('%', :pname, '%'))")
+    List<Product> findByNameLike(@Param("storeId") Long storeId, @Param("pname") String pname);
 
     @Query("SELECT i.product FROM Inventory i WHERE i.store.id = :storeId AND LOWER(i.product.name) LIKE LOWER(CONCAT('%', :pname, '%')) AND i.product.category = :category")
     List<Product> findByNameAndCategory(@Param("storeId") Long storeId, @Param("pname") String pname, @Param("category") String category);
@@ -32,15 +32,15 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT i.product FROM Inventory i WHERE i.store.id = :storeId AND i.product.category = :category")
     List<Product> findByCategoryAndStoreId(@Param("storeId") Long storeId, @Param("category") String category);
 
-    @Query("SELECT i FROM Product i WHERE LOWER(i.name) LIKE LOWER(CONCAT('%', :pname, '%'))")
+    @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :pname, '%'))")
     List<Product> findProductBySubName(@Param("pname") String pname);
 
     @Query("SELECT i.product FROM Inventory i WHERE i.store.id = :storeId")
     List<Product> findProductsByStoreId(@Param("storeId") Long storeId);
 
-    @Query("SELECT i.product FROM Inventory i WHERE i.product.category = :category and i.store.id = :storeId")
+    @Query("SELECT i.product FROM Inventory i WHERE i.product.category = :category AND i.store.id = :storeId")
     List<Product> findProductByCategory(@Param("category") String category, @Param("storeId") Long storeId);
 
-    @Query("SELECT i FROM Product i WHERE LOWER(i.name) LIKE LOWER(CONCAT('%', :pname, '%')) AND i.category = :category")
+    @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :pname, '%')) AND p.category = :category")
     List<Product> findProductBySubNameAndCategory(@Param("pname") String pname, @Param("category") String category);
 }
