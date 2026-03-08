@@ -42,8 +42,6 @@ public class OrderService {
     private OrderItemRepository orderItemRepository;
 
     public void saveOrder(PlaceOrderRequestDTO placeOrderRequest) {
-
-        // Retrieve or create customer
         Customer customer = customerRepository.findByEmail(placeOrderRequest.getCustomerEmail());
         if (customer == null) {
             customer = new Customer();
@@ -53,43 +51,26 @@ public class OrderService {
             customer = customerRepository.save(customer);
         }
 
-        // Retrieve the store
         Optional<Store> storeOptional = storeRepository.findById(placeOrderRequest.getStoreId());
         if (!storeOptional.isPresent()) {
             throw new RuntimeException("Store not found with id: " + placeOrderRequest.getStoreId());
         }
         Store store = storeOptional.get();
 
-        // Create and save OrderDetails
-        OrderDetails orderDetails = new OrderDetails(
-                customer,
-                store,
-                placeOrderRequest.getTotalPrice(),
-                LocalDateTime.now()
-        );
+        OrderDetails orderDetails = new OrderDetails(customer, store, placeOrderRequest.getTotalPrice(), LocalDateTime.now());
         orderDetails = orderDetailsRepository.save(orderDetails);
 
-        // Create and save OrderItems, update inventory
         for (PurchaseProductDTO purchaseProduct : placeOrderRequest.getPurchaseProducts()) {
             Product product = productRepository.findById((long) purchaseProduct.getProductId());
 
-            // Update inventory stock level
             Inventory inventory = inventoryRepository.findByProductIdandStoreId(
-                    purchaseProduct.getProductId(),
-                    placeOrderRequest.getStoreId()
-            );
+                    purchaseProduct.getProductId(), placeOrderRequest.getStoreId());
             if (inventory != null) {
                 inventory.setStockLevel(inventory.getStockLevel() - purchaseProduct.getQuantity());
                 inventoryRepository.save(inventory);
             }
 
-            // Create and save the order item
-            OrderItem orderItem = new OrderItem(
-                    orderDetails,
-                    product,
-                    purchaseProduct.getQuantity(),
-                    purchaseProduct.getPrice()
-            );
+            OrderItem orderItem = new OrderItem(orderDetails, product, purchaseProduct.getQuantity(), purchaseProduct.getPrice());
             orderItemRepository.save(orderItem);
         }
     }
