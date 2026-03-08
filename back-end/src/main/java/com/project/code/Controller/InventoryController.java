@@ -88,7 +88,7 @@ public class InventoryController {
         return response;
     }
 
-    @GetMapping("filter/{category}/{name}/{storeid}")
+    @GetMapping("/filter/{category}/{name}/{storeid}")
     public Map<String, Object> getProductName(
             @PathVariable String category,
             @PathVariable String name,
@@ -109,7 +109,7 @@ public class InventoryController {
         return response;
     }
 
-    @GetMapping("search/{name}/{storeId}")
+    @GetMapping("/search/{name}/{storeId}")
     public Map<String, Object> searchProduct(@PathVariable String name, @PathVariable Long storeId) {
         Map<String, Object> response = new HashMap<>();
         List<Product> products = productRepository.findByNameLike(storeId, name);
@@ -130,7 +130,7 @@ public class InventoryController {
         return response;
     }
 
-    @GetMapping("validate/{quantity}/{storeId}/{productId}")
+    @GetMapping("/validate/{quantity}/{storeId}/{productId}")
     public boolean validateQuantity(
             @PathVariable Integer quantity,
             @PathVariable Long storeId,
