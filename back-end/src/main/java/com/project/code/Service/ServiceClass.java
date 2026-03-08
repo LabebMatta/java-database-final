@@ -17,9 +17,6 @@ public class ServiceClass {
         this.productRepository = productRepository;
     }
 
-    /**
-     * Returns false if inventory already exists for the product-store combo, true otherwise.
-     */
     public boolean validateInventory(Inventory inventory) {
         Inventory existing = inventoryRepository.findByProductIdandStoreId(
                 inventory.getProduct().getId(),
@@ -28,25 +25,16 @@ public class ServiceClass {
         return existing == null;
     }
 
-    /**
-     * Returns false if a product with the same name already exists, true otherwise.
-     */
     public boolean validateProduct(Product product) {
         Product existing = productRepository.findByName(product.getName());
         return existing == null;
     }
 
-    /**
-     * Returns false if the product does not exist by ID, true otherwise.
-     */
     public boolean ValidateProductId(long id) {
         Product existing = productRepository.findById(id);
         return existing != null;
     }
 
-    /**
-     * Returns the inventory record for a given product-store combination.
-     */
     public Inventory getInventoryId(Inventory inventory) {
         return inventoryRepository.findByProductIdandStoreId(
                 inventory.getProduct().getId(),
