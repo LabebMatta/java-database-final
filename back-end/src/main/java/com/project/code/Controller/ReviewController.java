@@ -5,7 +5,10 @@ import com.project.code.Model.Review;
 import com.project.code.Repo.CustomerRepository;
 import com.project.code.Repo.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,20 +34,14 @@ public class ReviewController {
     }
 
     @GetMapping("/{storeId}/{productId}")
-    public Map<String, Object> getReviews(
-            @PathVariable Long storeId,
-            @PathVariable Long productId) {
-
+    public Map<String, Object> getReviews(@PathVariable Long storeId, @PathVariable Long productId) {
         Map<String, Object> response = new HashMap<>();
-
         List<Review> reviews = reviewRepository.findByStoreIdAndProductId(storeId, productId);
-
         List<Map<String, Object>> reviewList = new ArrayList<>();
         for (Review review : reviews) {
             Map<String, Object> reviewMap = new HashMap<>();
             reviewMap.put("rating", review.getRating());
             reviewMap.put("comment", review.getComment());
-
             Customer customer = customerRepository.findById((long) review.getCustomerId());
             if (customer != null) {
                 reviewMap.put("customerName", customer.getName());
@@ -53,7 +50,6 @@ public class ReviewController {
             }
             reviewList.add(reviewMap);
         }
-
         response.put("reviews", reviewList);
         return response;
     }
