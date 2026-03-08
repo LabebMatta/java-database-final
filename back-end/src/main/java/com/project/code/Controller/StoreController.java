@@ -29,7 +29,7 @@ public class StoreController {
         return response;
     }
 
-    @GetMapping("validate/{storeId}")
+    @GetMapping("/validate/{storeId}")
     public boolean validateStore(@PathVariable Long storeId) {
         Optional<Store> store = storeRepository.findById(storeId);
         return store.isPresent();
