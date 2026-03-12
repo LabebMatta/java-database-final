@@ -42,6 +42,7 @@ public class OrderService {
     private OrderItemRepository orderItemRepository;
 
     public void saveOrder(PlaceOrderRequestDTO placeOrderRequest) {
+
         Customer customer = customerRepository.findByEmail(placeOrderRequest.getCustomerEmail());
         if (customer == null) {
             customer = new Customer();
@@ -57,20 +58,32 @@ public class OrderService {
         }
         Store store = storeOptional.get();
 
-        OrderDetails orderDetails = new OrderDetails(customer, store, placeOrderRequest.getTotalPrice(), LocalDateTime.now());
+        OrderDetails orderDetails = new OrderDetails(
+                customer,
+                store,
+                placeOrderRequest.getTotalPrice(),
+                LocalDateTime.now()
+        );
         orderDetails = orderDetailsRepository.save(orderDetails);
 
-        for (PurchaseProductDTO purchaseProduct : placeOrderRequest.getPurchaseProducts()) {
-            Product product = productRepository.findById((long) purchaseProduct.getProductId());
+        for (PurchaseProductDTO purchaseProduct: placeOrderRequest.getPurchaseProducts()) {
+            Product product = productRepository.findById((long) purchaseProduct.getId());
 
             Inventory inventory = inventoryRepository.findByProductIdandStoreId(
-                    purchaseProduct.getProductId(), placeOrderRequest.getStoreId());
+                    purchaseProduct.getId(),
+                    placeOrderRequest.getStoreId()
+            );
             if (inventory != null) {
                 inventory.setStockLevel(inventory.getStockLevel() - purchaseProduct.getQuantity());
                 inventoryRepository.save(inventory);
             }
 
-            OrderItem orderItem = new OrderItem(orderDetails, product, purchaseProduct.getQuantity(), purchaseProduct.getPrice());
+            OrderItem orderItem = new OrderItem(
+                    orderDetails,
+                    product,
+                    purchaseProduct.getQuantity(),
+                    purchaseProduct.getPrice()
+            );
             orderItemRepository.save(orderItem);
         }
     }
