@@ -2,16 +2,22 @@ package com.project.code.Model;
 
 public class PurchaseProductDTO {
 
-    private Long productId;
+    private Long id;
+    private String name;
     private Integer quantity;
     private Double price;
 
     public PurchaseProductDTO() {}
 
-    public Long getProductId() { return productId; }
-    public void setProductId(Long productId) { this.productId = productId; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
+
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }
 }
