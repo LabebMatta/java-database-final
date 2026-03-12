@@ -5,14 +5,8 @@ import com.project.code.Repo.InventoryRepository;
 import com.project.code.Repo.ProductRepository;
 import com.project.code.Service.ServiceClass;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,16 +28,22 @@ public class ProductController {
     @PostMapping
     public Map<String, String> addProduct(@RequestBody Product product) {
         Map<String, String> response = new HashMap<>();
-        if (!serviceClass.validateProduct(product)) {
-            response.put("message", "Product already exists");
-            return response;
+        try {
+            if (!serviceClass.validateProduct(product)) {
+                response.put("message", "Product already exists");
+                return response;
+            }
+            productRepository.save(product);
+            response.put("message", "Product saved successfully");
+        } catch (DataIntegrityViolationException e) {
+            response.put("message", "SKU must be unique: " + e.getMessage());
+        } catch (Exception e) {
+            response.put("message", "Error: " + e.getMessage());
         }
-        productRepository.save(product);
-        response.put("message", "Product saved successfully");
         return response;
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/product/{id}")
     public Map<String, Object> getProductbyId(@PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
         Product product = productRepository.findById((long) id);
@@ -54,15 +54,23 @@ public class ProductController {
     @PutMapping
     public Map<String, String> updateProduct(@RequestBody Product product) {
         Map<String, String> response = new HashMap<>();
-        productRepository.save(product);
-        response.put("message", "Product updated successfully");
+        try {
+            productRepository.save(product);
+            response.put("message", "Product updated successfully");
+        } catch (Exception e) {
+            response.put("message", "Error: " + e.getMessage());
+        }
         return response;
     }
 
     @GetMapping("/category/{name}/{category}")
-    public Map<String, Object> filterbyCategoryProduct(@PathVariable String name, @PathVariable String category) {
+    public Map<String, Object> filterbyCategoryProduct(
+            @PathVariable String name,
+            @PathVariable String category) {
+
         Map<String, Object> response = new HashMap<>();
         List<Product> products;
+
         if (name.equals("null") && !category.equals("null")) {
             products = productRepository.findByCategory(category);
         } else if (category.equals("null") && !name.equals("null")) {
@@ -70,6 +78,7 @@ public class ProductController {
         } else {
             products = productRepository.findProductBySubNameAndCategory(name, category);
         }
+
         response.put("products", products);
         return response;
     }
@@ -83,7 +92,10 @@ public class ProductController {
     }
 
     @GetMapping("/filter/{category}/{storeid}")
-    public Map<String, Object> getProductbyCategoryAndStoreId(@PathVariable String category, @PathVariable Long storeid) {
+    public Map<String, Object> getProductbyCategoryAndStoreId(
+            @PathVariable String category,
+            @PathVariable Long storeid) {
+
         Map<String, Object> response = new HashMap<>();
         List<Product> products = productRepository.findProductByCategory(category, storeid);
         response.put("product", products);
